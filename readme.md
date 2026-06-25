@@ -8,6 +8,8 @@ Project page: https://guseclab.github.io/diffused/
 
 ##### Hosting the project page
 
-The site is a static `index.html` served from the repo root. To enable it, go to
-**Settings → Pages** and set the source to the `main` branch, `/ (root)` folder.
-`.nojekyll` disables Jekyll so files are served as-is.
+The site is a static `index.html` in `docs/www/`. To enable it, go to
+**Settings → Pages** and set the source to the `main` branch, `/docs` folder.
+`docs/index.html` redirects the base URL to `www/` so the cited
+`guseclab.github.io/diffused/` link still resolves; `.nojekyll` disables
+Jekyll so files are served as-is.

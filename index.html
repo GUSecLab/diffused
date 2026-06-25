@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DIFFUSED — Taming Revocable Spot VM Instances</title>
+<meta name="description" content="DIFFUSED is a Linux runtime shim that enables process diffusion: seamlessly roaming a program's execution across cloud spot VM instances to tame revocation while keeping the spot discount.">
+<meta property="og:title" content="Taming Revocable Spot VM Instances with DIFFUSED">
+<meta property="og:description" content="A Linux runtime shim that roams program execution across spot instances to handle revocation while keeping up to a 52% spot discount.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-soft: #f6f7fb;
+    --ink: #1a1c23;
+    --muted: #5b6172;
+    --line: #e4e7ef;
+    --accent: #3a52d6;
+    --accent-soft: #eaedfd;
+    --maxw: 880px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+  code, .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  /* Hero */
+  header.hero {
+    background: radial-gradient(1200px 500px at 50% -200px, var(--accent-soft), transparent 70%);
+    border-bottom: 1px solid var(--line);
+    padding: 64px 0 48px;
+    text-align: center;
+  }
+  .eyebrow {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 5px 12px;
+    border-radius: 999px;
+    margin-bottom: 22px;
+  }
+  h1.title {
+    font-size: clamp(30px, 5.2vw, 46px);
+    line-height: 1.12;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 auto 6px;
+    max-width: 14ch;
+  }
+  h1.title .sc { font-variant: small-caps; letter-spacing: 0; }
+  .subtitle { color: var(--muted); font-size: 18px; margin: 14px auto 30px; max-width: 56ch; }
+
+  .authors { font-size: 17px; font-weight: 500; margin: 0 0 6px; }
+  .authors a { color: var(--ink); text-decoration: none; }
+  .authors a:hover { color: var(--accent); }
+  .affils { color: var(--muted); font-size: 14px; margin: 0 0 30px; }
+
+  .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-weight: 600; font-size: 15px;
+    padding: 11px 20px; border-radius: 10px;
+    text-decoration: none; border: 1px solid var(--line);
+    color: var(--ink); background: #fff;
+    transition: transform .08s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,28,35,.08); }
+  .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn svg { width: 18px; height: 18px; }
+
+  /* Sections */
+  section { padding: 52px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+  h2 { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 18px; }
+  p { margin: 0 0 16px; }
+  .lead { font-size: 18px; }
+  strong { font-weight: 650; }
+  .sc { font-variant: small-caps; }
+
+  .abstract {
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 26px 28px;
+    color: #34384a;
+  }
+
+  /* Idea cards */
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card {
+    border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px 22px; background: #fff;
+  }
+  .card h3 { margin: 0 0 8px; font-size: 17px; }
+  .card .tag {
+    font: 600 12px/1 "JetBrains Mono", monospace;
+    color: var(--accent); background: var(--accent-soft);
+    padding: 4px 8px; border-radius: 6px; display: inline-block; margin-bottom: 12px;
+  }
+  .card p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  /* Diagram */
+  .figure { margin: 8px 0 0; }
+  .figure svg { width: 100%; height: auto; display: block; }
+  .figcaption { color: var(--muted); font-size: 14px; margin-top: 12px; text-align: center; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .stat {
+    border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px; text-align: center; background: var(--bg-soft);
+  }
+  .stat .num { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; color: var(--accent); }
+  .stat .lbl { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+  ul.clean { margin: 0; padding-left: 20px; }
+  ul.clean li { margin-bottom: 8px; }
+
+  /* BibTeX */
+  pre.bibtex {
+    background: #14161f; color: #e6e8f0;
+    border-radius: 12px; padding: 20px 22px;
+    overflow-x: auto; font-size: 13.5px; line-height: 1.65;
+  }
+  pre.bibtex .k { color: #8ea2ff; }
+  pre.bibtex .f { color: #7fd6a6; }
+
+  footer {
+    padding: 36px 0 48px; color: var(--muted); font-size: 14px; text-align: center;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  @media (max-width: 640px) {
+    .cards, .stats { grid-template-columns: 1fr; }
+    section { padding: 40px 0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">ICSME 2026</span>
+    <h1 class="title">Taming Revocable Spot VM Instances with <span class="sc">Diffused</span></h1>
+    <p class="subtitle">A Linux runtime shim that lets a program’s execution <em>roam</em> across cloud spot instances — handling revocation automatically while keeping the spot discount.</p>
+
+    <p class="authors">
+      Zhao Zhang &middot; Zeying Zhu &middot; <a href="https://seclab.cs.georgetown.edu/msherr/">Micah Sherr</a> &middot; Benjamin E. Ujcich &middot; Wenchao Zhou
+    </p>
+    <p class="affils" style="margin-bottom:4px">Georgetown University &nbsp;·&nbsp; University of Maryland, College Park</p>
+    <p class="affils" style="margin-bottom:30px">International Conference on Software Maintenance and Evolution (ICSME) 2026</p>
+
+    <div class="actions">
+      <a class="btn primary" href="diffused.pdf">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Read the Paper
+      </a>
+      <a class="btn" href="https://github.com/GUSecLab/diffused">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.6 18.3 5 18.3 5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+        Code &amp; Docs
+      </a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section id="abstract">
+  <div class="wrap">
+    <h2>Abstract</h2>
+    <div class="abstract">
+      <p>Modern clouds offer <strong>spot virtual machine (VM) instances</strong> that provide cost savings but leave unsolved technical debt, forcing users to handle unpredictable revocations. We introduce <span class="sc">Diffused</span>, a Linux runtime shim that enables <strong>process diffusion</strong> — the ability to seamlessly roam the execution of programs across instances. <span class="sc">Diffused</span> decouples revocation handling, allowing the use of spot instances as cheaper, diskless, and replaceable computation nodes.</p>
+      <p style="margin-bottom:0">We evaluate <span class="sc">Diffused</span> and show that it provides similar (or even improved) performance compared to on-demand instances while maintaining up to a <strong>52% spot discount</strong>.</p>
+    </div>
+  </div>
+</section>
+
+<section id="idea">
+  <div class="wrap">
+    <h2>The key idea: process diffusion</h2>
+    <p class="lead">Instead of designing every workload to survive revocation, <span class="sc">Diffused</span> splits a running process into two parts and lets the cloud handle the rest.</p>
+    <div class="cards">
+      <div class="card">
+        <span class="tag">computational part</span>
+        <h3>Roams freely across spot VMs</h3>
+        <p>The CPU and memory state of the program — the part that just computes — is migrated onto cheap, powerful spot instances and recalled when they are revoked.</p>
+      </div>
+      <div class="card">
+        <span class="tag">environmental part</span>
+        <h3>Stays on a stable on-demand VM</h3>
+        <p>Storage, file descriptors, and other environment interactions remain on a low-cost, non-revocable on-demand instance and are accessed remotely.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <p>A program starts on the on-demand VM with <strong><span class="sc">DHost</span></strong>, a lightweight shim that lives inside the program’s own process space — no kernel changes and minimal application changes. A global monitor, <strong><span class="sc">DMon</span></strong>, watches all instances and decides when to act:</p>
+    <ul class="clean">
+      <li><strong>Roam.</strong> <span class="sc">DMon</span> moves a program’s computational part onto an available spot instance, which then runs it diskless using the on-demand VM’s resources via RPC.</li>
+      <li><strong>Recall.</strong> On a revocation notice, the program is quickly pulled back to the on-demand VM — within seconds — and re-roamed once a new spot instance is available.</li>
+    </ul>
+
+    <div class="figure" aria-label="Diagram of roaming and recalling a process between an on-demand VM and spot VMs">
+      <svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif">
+        <defs>
+          <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="#3a52d6"/>
+          </marker>
+          <marker id="arrowg" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="#9aa1b8"/>
+          </marker>
+        </defs>
+
+        <!-- On-demand VM -->
+        <rect x="40" y="60" width="220" height="120" rx="14" fill="#eaedfd" stroke="#3a52d6" stroke-width="1.5"/>
+        <text x="150" y="86" text-anchor="middle" font-size="13" font-weight="700" fill="#1a1c23">On-demand VM</text>
+        <text x="150" y="104" text-anchor="middle" font-size="11" fill="#5b6172">non-revocable · stable</text>
+        <rect x="64" y="118" width="78" height="42" rx="8" fill="#fff" stroke="#c9cfe9"/>
+        <text x="103" y="143" text-anchor="middle" font-size="12" font-weight="600" fill="#3a52d6" font-variant="small-caps">DHost</text>
+        <rect x="158" y="118" width="78" height="42" rx="8" fill="#fff" stroke="#c9cfe9"/>
+        <text x="197" y="143" text-anchor="middle" font-size="12" font-weight="600" fill="#3a52d6" font-variant="small-caps">DMon</text>
+
+        <!-- Spot VMs -->
+        <rect x="520" y="44" width="200" height="74" rx="14" fill="#f6f7fb" stroke="#9aa1b8" stroke-width="1.5"/>
+        <text x="620" y="70" text-anchor="middle" font-size="13" font-weight="700" fill="#1a1c23">Spot VM</text>
+        <rect x="544" y="80" width="152" height="26" rx="7" fill="#fff" stroke="#cfd4e2"/>
+        <text x="620" y="98" text-anchor="middle" font-size="11" font-weight="600" fill="#5b6172" font-variant="small-caps">DHost (remote)</text>
+
+        <rect x="520" y="128" width="200" height="74" rx="14" fill="#f6f7fb" stroke="#9aa1b8" stroke-width="1.5"/>
+        <text x="620" y="154" text-anchor="middle" font-size="13" font-weight="700" fill="#1a1c23">Spot VM</text>
+        <rect x="544" y="164" width="152" height="26" rx="7" fill="#fff" stroke="#cfd4e2"/>
+        <text x="620" y="182" text-anchor="middle" font-size="11" font-weight="600" fill="#5b6172" font-variant="small-caps">DHost (remote)</text>
+
+        <!-- roam arrow -->
+        <path d="M266 105 C 380 70, 430 70, 514 80" fill="none" stroke="#3a52d6" stroke-width="2" marker-end="url(#arrow)"/>
+        <text x="388" y="62" text-anchor="middle" font-size="12" font-weight="600" fill="#3a52d6">roam →</text>
+
+        <!-- recall arrow -->
+        <path d="M514 100 C 430 130, 380 130, 266 135" fill="none" stroke="#9aa1b8" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrowg)"/>
+        <text x="388" y="152" text-anchor="middle" font-size="12" font-weight="600" fill="#5b6172">← recall on revocation</text>
+      </svg>
+    </div>
+    <p class="figcaption"><span class="sc">DMon</span> roams the computational part onto spot instances and recalls it before revocation, while the on-demand VM keeps the environment consistent.</p>
+  </div>
+</section>
+
+<section id="results">
+  <div class="wrap">
+    <h2>Results</h2>
+    <div class="stats">
+      <div class="stat"><div class="num">52%</div><div class="lbl">spot discount maintained</div></div>
+      <div class="stat"><div class="num">≈1×</div><div class="lbl">performance vs. on-demand</div></div>
+      <div class="stat"><div class="num">seconds</div><div class="lbl">to recall on revocation</div></div>
+    </div>
+    <p style="margin-top:24px">We evaluate <span class="sc">Diffused</span> on AWS EC2 across a representative sampling of real workloads — including <span class="mono">FFmpeg</span>, <span class="mono">Memcached</span>, <span class="mono">llama.cpp</span>, <span class="mono">lbzip2</span>, and the <span class="mono">PARSEC</span> suite — and compare it against migration-based approaches such as CRIU and Firecracker microVMs. Roamed programs match or exceed on-demand performance for CPU-bound work while flexibly combining on-demand and spot instances to stay both performant and cost-efficient.</p>
+  </div>
+</section>
+
+<section id="cite">
+  <div class="wrap">
+    <h2>Citation</h2>
+    <pre class="bibtex"><span class="k">@inproceedings</span>{diffused,
+  <span class="f">title</span>     = {Taming Revocable Spot VM Instances with {DIFFUSED}},
+  <span class="f">author</span>    = {Zhang, Zhao and Zhu, Zeying and Sherr, Micah and
+               Ujcich, Benjamin E. and Zhou, Wenchao},
+  <span class="f">booktitle</span> = {Proceedings of the IEEE International Conference on
+               Software Maintenance and Evolution (ICSME)},
+  <span class="f">year</span>      = {2026}
+}</pre>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><a href="https://github.com/GUSecLab/diffused">github.com/GUSecLab/diffused</a></p>
+    <p>Supported in part by the Callahan Chair Fund and the Farr Faculty Award.<br>From the <a href="https://seclab.cs.georgetown.edu/">Georgetown University Security and Privacy Lab</a>.</p>
+  </div>
+</footer>
+
+</body>
+</html>
